@@ -1,0 +1,171 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { QRCodeCanvas } from "qrcode.react";
+import JSZip from "jszip";
+import { Eye, EyeOff, Download, Trash2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { Topbar } from "@/components/Topbar";
+import { SignedImage } from "@/components/SignedImage";
+import { signedUrl, MOMENT_LABEL, firstName } from "@/lib/media";
+import { toast } from "sonner";
+
+export const Route = createFileRoute("/admin")({
+  head: () => ({ meta: [{ title: "admin · casamento lg & dc" }] }),
+  component: AdminPage,
+});
+
+type Filter = "all" | "public" | "private" | "hidden" | "flagged";
+
+function AdminPage() {
+  const { user, isAdmin, loading } = useAuth();
+  const [items, setItems] = useState<any[]>([]);
+  const [filter, setFilter] = useState<Filter>("all");
+  const [likeMap, setLikeMap] = useState<Record<string, number>>({});
+
+  useEffect(() => { if (isAdmin) void load(); }, [isAdmin]);
+
+  const load = async () => {
+    const { data } = await supabase
+      .from("memories")
+      .select("id, user_id, type, storage_path, mime_type, moment, visibility, message, hidden, flagged, created_at, profiles(name)")
+      .order("created_at", { ascending: false }).limit(2000);
+    setItems((data ?? []).map((m: any) => ({ ...m, profile: m.profiles })));
+    const ids = (data ?? []).map((m: any) => m.id);
+    if (ids.length) {
+      const { data: likes } = await supabase.from("likes").select("memory_id").in("memory_id", ids);
+      const map: Record<string, number> = {};
+      for (const l of likes ?? []) map[l.memory_id] = (map[l.memory_id] ?? 0) + 1;
+      setLikeMap(map);
+    }
+  };
+
+  if (loading) return <div className="p-8 text-center text-muted-foreground">carregando...</div>;
+  if (!user) return <div className="p-8 text-center"><Link to="/" className="text-rose-deep">faça login</Link></div>;
+  if (!isAdmin) return (
+    <div className="min-h-screen bg-watercolor"><Topbar /><div className="p-12 text-center text-muted-foreground">você não tem acesso a esta área.</div></div>
+  );
+
+  const stats = {
+    total: items.length,
+    pub: items.filter((m) => m.visibility === "public").length,
+    priv: items.filter((m) => m.visibility === "private").length,
+    people: new Set(items.map((m) => m.user_id)).size,
+  };
+
+  const filtered = items.filter((m) => {
+    if (filter === "public") return m.visibility === "public" && !m.hidden;
+    if (filter === "private") return m.visibility === "private";
+    if (filter === "hidden") return m.hidden;
+    if (filter === "flagged") return m.flagged;
+    return true;
+  });
+
+  const toggleHide = async (m: any) => {
+    await supabase.from("memories").update({ hidden: !m.hidden }).eq("id", m.id);
+    void load();
+  };
+
+  const exportAll = async () => {
+    toast.info(`exportando ${items.length} arquivos...`);
+    const zip = new JSZip();
+    for (const m of items) {
+      try {
+        const url = await signedUrl(m.storage_path);
+        const blob = await (await fetch(url)).blob();
+        const ext = m.storage_path.split(".").pop() ?? "jpg";
+        const folder = m.visibility === "private" ? `privadas/${m.moment}` : m.moment;
+        zip.file(`${folder}/${m.id}.${ext}`, blob);
+      } catch (e) { console.error(e); }
+    }
+    const out = await zip.generateAsync({ type: "blob" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(out);
+    a.download = `casamento-lg-dc-completo-${Date.now()}.zip`;
+    a.click();
+  };
+
+  const wipeAll = async () => {
+    if (!confirm("apagar TODAS as fotos do banco? esta ação não pode ser desfeita.")) return;
+    if (!confirm("tem certeza ABSOLUTA?")) return;
+    await supabase.from("memories").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    toast.success("tudo apagado.");
+    void load();
+  };
+
+  return (
+    <div className="min-h-screen bg-watercolor">
+      <Topbar />
+      <main className="mx-auto max-w-5xl px-4 py-6">
+        <h1 className="font-serif text-3xl text-rose-deep mb-5">admin</h1>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5">
+          <Stat label="TOTAL" value={stats.total} />
+          <Stat label="PÚBLICAS" value={stats.pub} />
+          <Stat label="PRIVADAS" value={stats.priv} />
+          <Stat label="PESSOAS" value={stats.people} />
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-4">
+          <button onClick={exportAll} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-rose text-primary-foreground text-sm">
+            <Download className="w-4 h-4" /> exportar tudo
+          </button>
+          <button onClick={wipeAll} className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-destructive text-destructive text-sm">
+            <Trash2 className="w-4 h-4" /> limpar tudo
+          </button>
+        </div>
+
+        <div className="flex gap-1.5 flex-wrap mb-4">
+          {(["all", "public", "private", "hidden", "flagged"] as Filter[]).map((f) => (
+            <button key={f} onClick={() => setFilter(f)}
+              className={`px-3 py-1.5 rounded-full text-xs border ${filter === f ? "bg-rose-bg border-rose-light text-rose-deep" : "bg-card border-border text-muted-foreground"}`}>
+              {f === "all" ? "todos" : f === "public" ? "públicas" : f === "private" ? "privadas" : f === "hidden" ? "ocultas" : "denunciadas"}
+            </button>
+          ))}
+        </div>
+
+        <div className="bg-card rounded-2xl border border-border divide-y divide-border overflow-hidden">
+          {filtered.map((m) => (
+            <div key={m.id} className="flex items-center gap-3 p-3">
+              <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-muted">
+                <SignedImage path={m.storage_path} className="w-full h-full object-cover" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{firstName(m.profile?.name ?? "")}</p>
+                {m.message && <p className="text-xs italic text-muted-foreground truncate">"{m.message}"</p>}
+                <p className="text-[11px] text-muted-foreground">
+                  {new Date(m.created_at).toLocaleString("pt-BR")} · {MOMENT_LABEL[m.moment]} ·
+                  {m.visibility === "private" ? " 🔒 privada" : " 🌐 pública"}
+                  {m.hidden && " · 🚫 oculta"}
+                  {m.flagged && " · ⚠ denunciada"}
+                  {" · ♡ "}{likeMap[m.id] ?? 0}
+                </p>
+              </div>
+              <button onClick={() => toggleHide(m)} className="shrink-0 px-3 py-1.5 rounded-full text-xs border border-border hover:border-rose-light flex items-center gap-1">
+                {m.hidden ? <><Eye className="w-3 h-3" /> mostrar</> : <><EyeOff className="w-3 h-3" /> ocultar</>}
+              </button>
+            </div>
+          ))}
+          {filtered.length === 0 && <div className="p-6 text-center text-sm text-muted-foreground">nenhuma foto neste filtro.</div>}
+        </div>
+
+        <div className="mt-8 bg-card rounded-3xl border border-border p-6 text-center">
+          <h2 className="font-serif text-xl text-rose-deep mb-3">qr code do app</h2>
+          <p className="text-xs text-muted-foreground mb-4">imprima e espalhe pelas mesas</p>
+          <div className="inline-block bg-white p-4 rounded-2xl">
+            <QRCodeCanvas value={typeof window !== "undefined" ? window.location.origin : ""} size={220} fgColor="#8B3F5E" />
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="bg-card border border-border rounded-2xl p-3 text-center">
+      <p className="label-eyebrow text-[10px]">{label}</p>
+      <p className="font-serif text-2xl text-rose-deep mt-0.5">{value}</p>
+    </div>
+  );
+}
