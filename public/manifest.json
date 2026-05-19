@@ -1,0 +1,10 @@
+{
+  "name": "Casamento LG & DC",
+  "short_name": "LG & DC",
+  "description": "Compartilhe as fotos e vídeos do casamento de Luiz Gustavo & Débora Cristina",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FBF6EE",
+  "theme_color": "#C6789B",
+  "icons": []
+}
