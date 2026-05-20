@@ -111,9 +111,13 @@ function AdminPage() {
     if (selected.size === 0) return;
     if (!confirm(`apagar ${selected.size} foto(s) selecionada(s)? esta ação não pode ser desfeita.`)) return;
     const ids = Array.from(selected);
-    const paths = items.filter((m) => selected.has(m.id)).map((m) => m.storage_path);
-    // Apaga do storage primeiro (best effort) e depois do banco
+    const rows = items.filter((m) => selected.has(m.id));
+    const paths = rows.map((m) => m.storage_path).filter(Boolean) as string[];
+    const driveIds = rows.map((m) => m.drive_file_id).filter(Boolean) as string[];
     if (paths.length) await supabase.storage.from("memories").remove(paths);
+    if (driveIds.length) {
+      try { await driveDelete({ data: { fileIds: driveIds } }); } catch (e) { console.error(e); }
+    }
     const { error } = await supabase.from("memories").delete().in("id", ids);
     if (error) { toast.error("erro ao apagar: " + error.message); return; }
     toast.success(`${ids.length} foto(s) apagada(s).`);
