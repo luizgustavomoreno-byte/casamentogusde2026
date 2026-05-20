@@ -87,7 +87,11 @@ export function Lightbox({ memory, onClose }: { memory: MemoryFull; onClose: () 
         <div className="flex justify-center mb-4">
           <SignedImage
             path={memory.storage_path}
+            driveFileId={memory.drive_file_id}
+            driveThumbnailUrl={memory.drive_thumbnail_url}
+            driveViewUrl={memory.drive_view_url}
             type={memory.type}
+            full
             className="max-h-[50vh] w-auto rounded-2xl object-contain"
           />
         </div>
