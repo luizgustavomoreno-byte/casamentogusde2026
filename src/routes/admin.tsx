@@ -73,11 +73,21 @@ function AdminPage() {
   const exportAll = async () => {
     toast.info(`exportando ${items.length} arquivos...`);
     const zip = new JSZip();
-    for (const m of items) {
+    for (const m of items as any[]) {
       try {
-        const url = await signedUrl(m.storage_path);
+        let url: string | null = null;
+        let ext = "jpg";
+        if (m.drive_file_id) {
+          url = m.type === "video"
+            ? `https://drive.google.com/uc?export=download&id=${m.drive_file_id}`
+            : `https://drive.google.com/thumbnail?id=${m.drive_file_id}&sz=w2400`;
+          ext = m.type === "video" ? "mp4" : "jpg";
+        } else if (m.storage_path) {
+          url = await signedUrl(m.storage_path);
+          ext = m.storage_path.split(".").pop() ?? "jpg";
+        }
+        if (!url) continue;
         const blob = await (await fetch(url)).blob();
-        const ext = m.storage_path.split(".").pop() ?? "jpg";
         const folder = m.visibility === "private" ? `privadas/${m.moment}` : m.moment;
         zip.file(`${folder}/${m.id}.${ext}`, blob);
       } catch (e) { console.error(e); }
@@ -85,7 +95,7 @@ function AdminPage() {
     const out = await zip.generateAsync({ type: "blob" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(out);
-    a.download = `casamento-lg-dc-completo-${Date.now()}.zip`;
+    a.download = `casamento-d-l-completo-${Date.now()}.zip`;
     a.click();
   };
 
