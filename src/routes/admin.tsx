@@ -21,6 +21,7 @@ type Filter = "all" | "public" | "private" | "hidden" | "flagged";
 
 function AdminPage() {
   const { user, isAdmin, loading } = useAuth();
+  const driveDelete = useServerFn(deleteFromDrive);
   const [items, setItems] = useState<any[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<Filter>("all");
