@@ -6,7 +6,10 @@ export type MemoryItem = {
   id: string;
   user_id: string;
   type: "image" | "video";
-  storage_path: string;
+  storage_path: string | null;
+  drive_file_id?: string | null;
+  drive_view_url?: string | null;
+  drive_thumbnail_url?: string | null;
   moment: string;
   visibility: "public" | "private";
   message: string | null;
@@ -30,9 +33,13 @@ export function MemoryCard({
     >
       <SignedImage
         path={m.storage_path}
+        driveFileId={m.drive_file_id}
+        driveThumbnailUrl={m.drive_thumbnail_url}
+        driveViewUrl={m.drive_view_url}
         type="image"
         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
       />
+
       <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-[var(--bg-cream)]/85 text-text-primary">
         {MOMENT_LABEL[m.moment]}
       </span>
