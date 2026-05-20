@@ -29,7 +29,7 @@ function AdminPage() {
   const load = async () => {
     const { data } = await supabase
       .from("memories")
-      .select("id, user_id, type, storage_path, mime_type, moment, visibility, message, hidden, flagged, created_at, profiles(name)")
+      .select("id, user_id, type, storage_path, drive_file_id, drive_view_url, drive_thumbnail_url, mime_type, moment, visibility, message, hidden, flagged, created_at, profiles(name)")
       .order("created_at", { ascending: false }).limit(2000);
     setItems((data ?? []).map((m: any) => ({ ...m, profile: m.profiles })));
     const ids = (data ?? []).map((m: any) => m.id);
