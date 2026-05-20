@@ -32,7 +32,7 @@ function RankingPage() {
   const load = async () => {
     const { data: mems } = await supabase
       .from("memories")
-      .select("id, user_id, type, storage_path, moment, visibility, message, created_at, profiles(name)")
+      .select("id, user_id, type, storage_path, drive_file_id, drive_view_url, drive_thumbnail_url, moment, visibility, message, created_at, profiles(name)")
       .eq("visibility", "public").eq("hidden", false);
     const memList = mems ?? [];
     const { data: allLikes } = await supabase.from("likes").select("memory_id");
