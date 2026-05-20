@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { QRCodeCanvas } from "qrcode.react";
 import JSZip from "jszip";
 import { Eye, EyeOff, Download, Trash2 } from "lucide-react";
@@ -8,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Topbar } from "@/components/Topbar";
 import { SignedImage } from "@/components/SignedImage";
 import { signedUrl, MOMENT_LABEL, firstName } from "@/lib/media";
+import { deleteFromDrive } from "@/lib/drive.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin")({
