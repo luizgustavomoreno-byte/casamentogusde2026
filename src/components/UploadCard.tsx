@@ -38,7 +38,7 @@ export function UploadCard() {
     const items: QueueItem[] = Array.from(files)
       .filter((f) => {
         if (f.size > MAX_SIZE) {
-          toast.error(`${f.name}: ultrapassa 100MB`);
+          toast.error(`${f.name}: ultrapassa 200MB`);
           return false;
         }
         return true;
@@ -214,7 +214,7 @@ export function UploadCard() {
         )}
 
         <p className="mt-4 text-[11px] text-center text-text-tertiary" style={{ color: "var(--text-tertiary)" }}>
-          envie quantas quiser · fotos e vídeos até 100MB (≈1 min em HD)
+          envie quantas quiser · fotos e vídeos até 200MB (≈1 min em HD)
         </p>
       </div>
     </div>
