@@ -9,7 +9,10 @@ export type MemoryFull = {
   id: string;
   user_id: string;
   type: "image" | "video";
-  storage_path: string;
+  storage_path: string | null;
+  drive_file_id?: string | null;
+  drive_view_url?: string | null;
+  drive_thumbnail_url?: string | null;
   moment: string;
   visibility: "public" | "private";
   message: string | null;
