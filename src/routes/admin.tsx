@@ -173,7 +173,7 @@ function AdminPage() {
                 className="w-4 h-4 shrink-0 accent-rose-deep cursor-pointer"
               />
               <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-muted cursor-pointer" onClick={() => toggleSelect(m.id)}>
-                <SignedImage path={m.storage_path} className="w-full h-full object-cover" />
+                <SignedImage path={m.storage_path} driveFileId={m.drive_file_id} driveThumbnailUrl={m.drive_thumbnail_url} driveViewUrl={m.drive_view_url} type={m.type} className="w-full h-full object-cover" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{firstName(m.profile?.name ?? "")}</p>
