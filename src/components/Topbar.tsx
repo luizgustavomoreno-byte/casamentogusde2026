@@ -18,7 +18,7 @@ export function Topbar() {
   return (
     <header className="sticky top-0 z-40 bg-[var(--bg-cream-deep)]/85 backdrop-blur-md border-b border-border">
       <div className="mx-auto max-w-5xl px-4 py-3 flex items-center gap-3">
-        <Link to="/" className="font-serif text-lg shrink-0 text-rose-deep">LG &amp; DC</Link>
+        <Link to="/" className="font-serif text-lg shrink-0 text-rose-deep">D &amp; L</Link>
         <nav className="flex-1 overflow-x-auto flex gap-1 scrollbar-none">
           {TABS.map((t) => (
             <Link

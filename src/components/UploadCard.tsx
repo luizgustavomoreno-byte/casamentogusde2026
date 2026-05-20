@@ -17,7 +17,7 @@ type QueueItem = {
   status: "queued" | "uploading" | "done" | "error";
 };
 
-const MAX_SIZE = 25 * 1024 * 1024;
+const MAX_SIZE = 100 * 1024 * 1024; // 100MB — cabe vídeos curtos
 
 export function UploadCard() {
   const { user } = useAuth();
@@ -36,7 +36,7 @@ export function UploadCard() {
     const items: QueueItem[] = Array.from(files)
       .filter((f) => {
         if (f.size > MAX_SIZE) {
-          toast.error(`${f.name}: ultrapassa 25MB`);
+          toast.error(`${f.name}: ultrapassa 100MB`);
           return false;
         }
         return true;
@@ -186,8 +186,9 @@ export function UploadCard() {
           </button>
         </div>
 
-        <input ref={cameraRef} type="file" accept="image/*,video/*" capture="environment" hidden onChange={(e) => handleFiles(e.target.files)} />
-        <input ref={galleryRef} type="file" accept="image/*,video/*" multiple hidden onChange={(e) => handleFiles(e.target.files)} />
+        {/* capture="environment" abre direto a câmera traseira no celular */}
+        <input ref={cameraRef} type="file" accept="image/*,video/*" capture="environment" hidden onChange={(e) => { handleFiles(e.target.files); e.target.value = ""; }} />
+        <input ref={galleryRef} type="file" accept="image/*,video/*" multiple hidden onChange={(e) => { handleFiles(e.target.files); e.target.value = ""; }} />
 
         {queue.length > 0 && (
           <div className="mt-5 space-y-2">
@@ -215,7 +216,7 @@ export function UploadCard() {
         )}
 
         <p className="mt-4 text-[11px] text-center text-text-tertiary" style={{ color: "var(--text-tertiary)" }}>
-          envie quantas quiser · vídeos de até 1 min funcionam melhor
+          envie quantas quiser · fotos e vídeos até 100MB (≈1 min em HD)
         </p>
       </div>
     </div>
