@@ -121,7 +121,15 @@ export type Database = {
           user_id?: string
           visibility?: Database["public"]["Enums"]["memory_visibility"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "memories_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
