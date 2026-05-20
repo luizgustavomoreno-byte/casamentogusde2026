@@ -43,7 +43,7 @@ function TVPage() {
     <div className="min-h-screen flex flex-col items-center justify-center text-white relative" style={{ backgroundColor: "var(--bg-dark)" }}>
       <Link
         to="/"
-        className="absolute top-6 left-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur text-xs uppercase tracking-widest transition-colors"
+        className="fixed top-4 left-4 z-50 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md text-xs uppercase tracking-widest text-white transition-colors shadow-lg"
       >
         <ArrowLeft className="w-4 h-4" /> voltar
       </Link>

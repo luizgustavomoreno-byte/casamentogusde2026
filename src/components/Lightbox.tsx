@@ -108,19 +108,31 @@ export function Lightbox({ memory, onClose }: { memory: MemoryFull; onClose: () 
           </button>
         </div>
 
-        <div className="mt-6 px-4 space-y-2 max-h-56 overflow-y-auto">
-          {comments.map((c) => (
-            <div key={c.id} className="flex gap-2 text-sm">
-              <span className="w-7 h-7 shrink-0 rounded-full bg-rose flex items-center justify-center text-[10px] font-medium">
-                {initials(c.profile?.name ?? "?")}
-              </span>
-              <div>
-                <span className="font-medium">{firstName(c.profile?.name ?? "?")}</span>
-                <span className="text-white/80 ml-2">{c.text}</span>
+        <div className="mt-6 px-4">
+          {comments.length > 0 && (
+            <p className="text-[11px] uppercase tracking-widest text-white/50 mb-2">
+              {comments.length} comentário{comments.length > 1 ? "s" : ""}
+            </p>
+          )}
+          <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
+            {comments.map((c) => (
+              <div key={c.id} className="flex gap-2 text-sm">
+                <span className="w-7 h-7 shrink-0 rounded-full bg-rose flex items-center justify-center text-[10px] font-medium">
+                  {initials(c.profile?.name ?? "?")}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="leading-snug">
+                    <span className="font-medium">{firstName(c.profile?.name ?? "?")}</span>
+                    <span className="text-white/80 ml-2 break-words">{c.text}</span>
+                  </p>
+                  <p className="text-[10px] text-white/40 mt-0.5">
+                    {new Date(c.created_at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
-          {comments.length === 0 && <p className="text-xs text-white/50 text-center">seja a primeira pessoa a comentar</p>}
+            ))}
+            {comments.length === 0 && <p className="text-xs text-white/50 text-center py-2">seja a primeira pessoa a comentar</p>}
+          </div>
         </div>
 
         {user && (
