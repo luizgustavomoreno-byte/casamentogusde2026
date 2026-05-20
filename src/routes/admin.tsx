@@ -131,12 +131,19 @@ function AdminPage() {
           <Stat label="PESSOAS" value={stats.people} />
         </div>
 
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-2 mb-4 items-center">
           <button onClick={exportAll} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-rose text-primary-foreground text-sm">
             <Download className="w-4 h-4" /> exportar tudo
           </button>
-          <button onClick={wipeAll} className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-destructive text-destructive text-sm">
-            <Trash2 className="w-4 h-4" /> limpar tudo
+          <button onClick={selectAllFiltered} className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border text-sm hover:border-rose-light">
+            selecionar tudo do filtro
+          </button>
+          <button
+            onClick={deleteSelected}
+            disabled={selected.size === 0}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-destructive text-destructive text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Trash2 className="w-4 h-4" /> apagar selecionadas ({selected.size})
           </button>
         </div>
 
@@ -151,8 +158,14 @@ function AdminPage() {
 
         <div className="bg-card rounded-2xl border border-border divide-y divide-border overflow-hidden">
           {filtered.map((m) => (
-            <div key={m.id} className="flex items-center gap-3 p-3">
-              <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-muted">
+            <div key={m.id} className={`flex items-center gap-3 p-3 ${selected.has(m.id) ? "bg-rose-bg/40" : ""}`}>
+              <input
+                type="checkbox"
+                checked={selected.has(m.id)}
+                onChange={() => toggleSelect(m.id)}
+                className="w-4 h-4 shrink-0 accent-rose-deep cursor-pointer"
+              />
+              <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-muted cursor-pointer" onClick={() => toggleSelect(m.id)}>
                 <SignedImage path={m.storage_path} className="w-full h-full object-cover" />
               </div>
               <div className="flex-1 min-w-0">
