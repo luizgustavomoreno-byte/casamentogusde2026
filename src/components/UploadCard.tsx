@@ -21,6 +21,7 @@ type QueueItem = {
 const MAX_SIZE = 200 * 1024 * 1024; // 200MB — vídeos curtos vão direto pro seu Drive
 
 export function UploadCard() {
+  const upload = useServerFn(uploadToDrive);
   const { user } = useAuth();
   const navigate = useNavigate();
   const [message, setMessage] = useState("");
