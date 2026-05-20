@@ -57,54 +57,50 @@ export function UploadCard() {
   const uploadOne = async (item: QueueItem, retry = 0) => {
     setQueue((q) => q.map((i) => (i.id === item.id ? { ...i, status: "uploading", progress: 10 } : i)));
     try {
-      let file: Blob = item.file;
       const isVideo = item.file.type.startsWith("video/");
+      let outFile: File = item.file;
+      let outMime = item.file.type || "application/octet-stream";
+
       if (!isVideo) {
-        file = await imageCompression(item.file, {
+        const compressed = await imageCompression(item.file, {
           maxSizeMB: 2.5,
           maxWidthOrHeight: 1400,
           useWebWorker: true,
           fileType: "image/jpeg",
           initialQuality: 0.8,
         });
+        outMime = "image/jpeg";
+        const baseName = item.file.name.replace(/\.[^.]+$/, "") || "foto";
+        outFile = new File([compressed], `${baseName}.jpg`, { type: "image/jpeg" });
       }
+
       setQueue((q) => q.map((i) => (i.id === item.id ? { ...i, progress: 40 } : i)));
 
-      const ext = isVideo ? (item.file.name.split(".").pop() || "mp4") : "jpg";
-      const path = `${user.id}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+      const form = new FormData();
+      form.append("file", outFile);
+      form.append("type", isVideo ? "video" : "image");
+      form.append("moment", moment);
+      form.append("visibility", visibility);
+      form.append("mimeType", outMime);
+      if (message.trim()) form.append("message", message.trim().slice(0, 200));
 
-      const { error: upErr } = await supabase.storage
-        .from("memories")
-        .upload(path, file, {
-          contentType: isVideo ? item.file.type : "image/jpeg",
-          upsert: false,
-        });
-      if (upErr) throw upErr;
+      setQueue((q) => q.map((i) => (i.id === item.id ? { ...i, progress: 60 } : i)));
 
-      setQueue((q) => q.map((i) => (i.id === item.id ? { ...i, progress: 80 } : i)));
-
-      const { error: insErr } = await supabase.from("memories").insert({
-        user_id: user.id,
-        type: isVideo ? "video" : "image",
-        storage_path: path,
-        mime_type: isVideo ? item.file.type : "image/jpeg",
-        size_bytes: (file as Blob).size,
-        moment,
-        visibility,
-        message: message.trim() || null,
-      });
-      if (insErr) throw insErr;
+      const res = await upload({ data: form });
+      if (!res?.ok) throw new Error("upload sem confirmação");
 
       setQueue((q) => q.map((i) => (i.id === item.id ? { ...i, progress: 100, status: "done" } : i)));
     } catch (e) {
       console.error(e);
       if (retry < 2) {
-        setTimeout(() => uploadOne(item, retry + 1), 800);
+        setTimeout(() => uploadOne(item, retry + 1), 1200);
         return;
       }
+      toast.error(`falha ao enviar ${item.file.name}`);
       setQueue((q) => q.map((i) => (i.id === item.id ? { ...i, status: "error" } : i)));
     }
   };
+
 
   // Redirect when all done
   if (queue.length > 0 && queue.every((i) => i.status === "done")) {
