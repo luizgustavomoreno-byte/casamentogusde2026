@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { QRCodeCanvas } from "qrcode.react";
 import JSZip from "jszip";
 import { Eye, EyeOff, Download, Trash2 } from "lucide-react";
@@ -8,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Topbar } from "@/components/Topbar";
 import { SignedImage } from "@/components/SignedImage";
 import { signedUrl, MOMENT_LABEL, firstName } from "@/lib/media";
+import { deleteFromDrive } from "@/lib/drive.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin")({
@@ -19,6 +21,7 @@ type Filter = "all" | "public" | "private" | "hidden" | "flagged";
 
 function AdminPage() {
   const { user, isAdmin, loading } = useAuth();
+  const driveDelete = useServerFn(deleteFromDrive);
   const [items, setItems] = useState<any[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<Filter>("all");
@@ -29,7 +32,7 @@ function AdminPage() {
   const load = async () => {
     const { data } = await supabase
       .from("memories")
-      .select("id, user_id, type, storage_path, mime_type, moment, visibility, message, hidden, flagged, created_at, profiles(name)")
+      .select("id, user_id, type, storage_path, drive_file_id, drive_view_url, drive_thumbnail_url, mime_type, moment, visibility, message, hidden, flagged, created_at, profiles(name)")
       .order("created_at", { ascending: false }).limit(2000);
     setItems((data ?? []).map((m: any) => ({ ...m, profile: m.profiles })));
     const ids = (data ?? []).map((m: any) => m.id);
@@ -70,11 +73,21 @@ function AdminPage() {
   const exportAll = async () => {
     toast.info(`exportando ${items.length} arquivos...`);
     const zip = new JSZip();
-    for (const m of items) {
+    for (const m of items as any[]) {
       try {
-        const url = await signedUrl(m.storage_path);
+        let url: string | null = null;
+        let ext = "jpg";
+        if (m.drive_file_id) {
+          url = m.type === "video"
+            ? `https://drive.google.com/uc?export=download&id=${m.drive_file_id}`
+            : `https://drive.google.com/thumbnail?id=${m.drive_file_id}&sz=w2400`;
+          ext = m.type === "video" ? "mp4" : "jpg";
+        } else if (m.storage_path) {
+          url = await signedUrl(m.storage_path);
+          ext = m.storage_path.split(".").pop() ?? "jpg";
+        }
+        if (!url) continue;
         const blob = await (await fetch(url)).blob();
-        const ext = m.storage_path.split(".").pop() ?? "jpg";
         const folder = m.visibility === "private" ? `privadas/${m.moment}` : m.moment;
         zip.file(`${folder}/${m.id}.${ext}`, blob);
       } catch (e) { console.error(e); }
@@ -82,7 +95,7 @@ function AdminPage() {
     const out = await zip.generateAsync({ type: "blob" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(out);
-    a.download = `casamento-lg-dc-completo-${Date.now()}.zip`;
+    a.download = `casamento-d-l-completo-${Date.now()}.zip`;
     a.click();
   };
 
@@ -108,9 +121,13 @@ function AdminPage() {
     if (selected.size === 0) return;
     if (!confirm(`apagar ${selected.size} foto(s) selecionada(s)? esta ação não pode ser desfeita.`)) return;
     const ids = Array.from(selected);
-    const paths = items.filter((m) => selected.has(m.id)).map((m) => m.storage_path);
-    // Apaga do storage primeiro (best effort) e depois do banco
+    const rows = items.filter((m) => selected.has(m.id));
+    const paths = rows.map((m) => m.storage_path).filter(Boolean) as string[];
+    const driveIds = rows.map((m) => m.drive_file_id).filter(Boolean) as string[];
     if (paths.length) await supabase.storage.from("memories").remove(paths);
+    if (driveIds.length) {
+      try { await driveDelete({ data: { fileIds: driveIds } }); } catch (e) { console.error(e); }
+    }
     const { error } = await supabase.from("memories").delete().in("id", ids);
     if (error) { toast.error("erro ao apagar: " + error.message); return; }
     toast.success(`${ids.length} foto(s) apagada(s).`);
@@ -166,7 +183,7 @@ function AdminPage() {
                 className="w-4 h-4 shrink-0 accent-rose-deep cursor-pointer"
               />
               <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-muted cursor-pointer" onClick={() => toggleSelect(m.id)}>
-                <SignedImage path={m.storage_path} className="w-full h-full object-cover" />
+                <SignedImage path={m.storage_path} driveFileId={m.drive_file_id} driveThumbnailUrl={m.drive_thumbnail_url} driveViewUrl={m.drive_view_url} type={m.type} className="w-full h-full object-cover" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{firstName(m.profile?.name ?? "")}</p>

@@ -40,7 +40,7 @@ function GaleriaPage() {
   const load = async () => {
     const { data: mems } = await supabase
       .from("memories")
-      .select("id, user_id, type, storage_path, moment, visibility, message, created_at, profiles(name, avatar_url)")
+      .select("id, user_id, type, storage_path, drive_file_id, drive_view_url, drive_thumbnail_url, moment, visibility, message, created_at, profiles(name, avatar_url)")
       .order("created_at", { ascending: false })
       .limit(500);
     const ids = (mems ?? []).map((m: any) => m.id);
@@ -71,18 +71,29 @@ function GaleriaPage() {
   const downloadAll = async () => {
     toast.info(`preparando ${filtered.length} arquivos...`);
     const zip = new JSZip();
-    for (const m of filtered) {
+    for (const m of filtered as any[]) {
       try {
-        const url = await signedUrl(m.storage_path);
+        let url: string | null = null;
+        let ext = "jpg";
+        if (m.drive_file_id) {
+          // baixar do Drive em qualidade alta
+          url = m.type === "video"
+            ? `https://drive.google.com/uc?export=download&id=${m.drive_file_id}`
+            : `https://drive.google.com/thumbnail?id=${m.drive_file_id}&sz=w2400`;
+          ext = m.type === "video" ? "mp4" : "jpg";
+        } else if (m.storage_path) {
+          url = await signedUrl(m.storage_path);
+          ext = m.storage_path.split(".").pop() ?? "jpg";
+        }
+        if (!url) continue;
         const blob = await (await fetch(url)).blob();
-        const ext = m.storage_path.split(".").pop() ?? "jpg";
         zip.file(`${m.moment}/${m.id}.${ext}`, blob);
       } catch (e) { console.error(e); }
     }
     const out = await zip.generateAsync({ type: "blob" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(out);
-    a.download = `casamento-lg-dc-${Date.now()}.zip`;
+    a.download = `casamento-d-l-${Date.now()}.zip`;
     a.click();
   };
 

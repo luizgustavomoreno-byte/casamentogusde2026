@@ -32,7 +32,7 @@ function TVPage() {
   const load = async () => {
     const { data } = await supabase
       .from("memories")
-      .select("id, type, storage_path, moment, message, profiles(name)")
+      .select("id, type, storage_path, drive_file_id, drive_view_url, drive_thumbnail_url, moment, message, profiles(name)")
       .eq("visibility", "public").eq("hidden", false)
       .order("created_at", { ascending: false }).limit(80);
     setItems((data ?? []).map((m: any) => ({ ...m, profile: m.profiles })));
@@ -55,7 +55,7 @@ function TVPage() {
       ) : (
         <div key={cur.id} className="text-center px-6 fade-in">
           <div className="flex justify-center mb-6">
-            <SignedImage path={cur.storage_path} type={cur.type} className="max-h-[60vh] rounded-2xl shadow-elegant" />
+            <SignedImage path={cur.storage_path} driveFileId={cur.drive_file_id} driveThumbnailUrl={cur.drive_thumbnail_url} driveViewUrl={cur.drive_view_url} type={cur.type} full className="max-h-[60vh] rounded-2xl shadow-elegant" />
           </div>
           <p className="font-serif text-4xl">{cur.profile?.name ?? "convidado"}</p>
           {cur.message && <p className="italic text-white/70 mt-2">"{cur.message}"</p>}

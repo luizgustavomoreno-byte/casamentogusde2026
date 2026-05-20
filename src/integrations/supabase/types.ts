@@ -78,6 +78,9 @@ export type Database = {
       memories: {
         Row: {
           created_at: string
+          drive_file_id: string | null
+          drive_thumbnail_url: string | null
+          drive_view_url: string | null
           flagged: boolean
           hidden: boolean
           id: string
@@ -85,7 +88,7 @@ export type Database = {
           mime_type: string
           moment: Database["public"]["Enums"]["memory_moment"]
           size_bytes: number
-          storage_path: string
+          storage_path: string | null
           thumbnail_path: string | null
           type: Database["public"]["Enums"]["memory_type"]
           user_id: string
@@ -93,6 +96,9 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          drive_file_id?: string | null
+          drive_thumbnail_url?: string | null
+          drive_view_url?: string | null
           flagged?: boolean
           hidden?: boolean
           id?: string
@@ -100,7 +106,7 @@ export type Database = {
           mime_type: string
           moment?: Database["public"]["Enums"]["memory_moment"]
           size_bytes?: number
-          storage_path: string
+          storage_path?: string | null
           thumbnail_path?: string | null
           type: Database["public"]["Enums"]["memory_type"]
           user_id: string
@@ -108,6 +114,9 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          drive_file_id?: string | null
+          drive_thumbnail_url?: string | null
+          drive_view_url?: string | null
           flagged?: boolean
           hidden?: boolean
           id?: string
@@ -115,7 +124,7 @@ export type Database = {
           mime_type?: string
           moment?: Database["public"]["Enums"]["memory_moment"]
           size_bytes?: number
-          storage_path?: string
+          storage_path?: string | null
           thumbnail_path?: string | null
           type?: Database["public"]["Enums"]["memory_type"]
           user_id?: string

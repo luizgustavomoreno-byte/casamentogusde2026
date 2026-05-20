@@ -32,7 +32,7 @@ function RankingPage() {
   const load = async () => {
     const { data: mems } = await supabase
       .from("memories")
-      .select("id, user_id, type, storage_path, moment, visibility, message, created_at, profiles(name)")
+      .select("id, user_id, type, storage_path, drive_file_id, drive_view_url, drive_thumbnail_url, moment, visibility, message, created_at, profiles(name)")
       .eq("visibility", "public").eq("hidden", false);
     const memList = mems ?? [];
     const { data: allLikes } = await supabase.from("likes").select("memory_id");
@@ -103,7 +103,7 @@ function RankingPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {topLiked.map((m, i) => (
                 <button key={m.id} onClick={() => setActive(m)} className="relative aspect-square rounded-xl overflow-hidden bg-muted group">
-                  <SignedImage path={m.storage_path} className="w-full h-full object-cover" />
+                  <SignedImage path={m.storage_path} driveFileId={m.drive_file_id} driveThumbnailUrl={m.drive_thumbnail_url} driveViewUrl={m.drive_view_url} type={m.type} className="w-full h-full object-cover" />
                   <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[10px] font-bold text-white" style={{ backgroundColor: "var(--gold)" }}>#{i + 1}</span>
                   <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded text-[10px] bg-black/60 text-white">♡ {m.likeCount}</span>
                   <span className="absolute bottom-1.5 left-1.5 text-[10px] text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow">{firstName(m.profile?.name ?? "")}</span>

@@ -9,7 +9,10 @@ export type MemoryFull = {
   id: string;
   user_id: string;
   type: "image" | "video";
-  storage_path: string;
+  storage_path: string | null;
+  drive_file_id?: string | null;
+  drive_view_url?: string | null;
+  drive_thumbnail_url?: string | null;
   moment: string;
   visibility: "public" | "private";
   message: string | null;
@@ -84,7 +87,11 @@ export function Lightbox({ memory, onClose }: { memory: MemoryFull; onClose: () 
         <div className="flex justify-center mb-4">
           <SignedImage
             path={memory.storage_path}
+            driveFileId={memory.drive_file_id}
+            driveThumbnailUrl={memory.drive_thumbnail_url}
+            driveViewUrl={memory.drive_view_url}
             type={memory.type}
+            full
             className="max-h-[50vh] w-auto rounded-2xl object-contain"
           />
         </div>
