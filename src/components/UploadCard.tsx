@@ -1,9 +1,10 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import imageCompression from "browser-image-compression";
 import { Camera, Image as ImageIcon, Globe, Lock, Check, X as XIcon } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { uploadToDrive } from "@/lib/drive.functions";
 import { toast } from "sonner";
 
 type Moment = "ceremonia" | "festa" | "pista";
@@ -17,7 +18,7 @@ type QueueItem = {
   status: "queued" | "uploading" | "done" | "error";
 };
 
-const MAX_SIZE = 100 * 1024 * 1024; // 100MB — cabe vídeos curtos
+const MAX_SIZE = 200 * 1024 * 1024; // 200MB — vídeos curtos vão direto pro seu Drive
 
 export function UploadCard() {
   const { user } = useAuth();
