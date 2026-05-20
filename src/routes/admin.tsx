@@ -20,6 +20,7 @@ type Filter = "all" | "public" | "private" | "hidden" | "flagged";
 function AdminPage() {
   const { user, isAdmin, loading } = useAuth();
   const [items, setItems] = useState<any[]>([]);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<Filter>("all");
   const [likeMap, setLikeMap] = useState<Record<string, number>>({});
 
@@ -85,11 +86,35 @@ function AdminPage() {
     a.click();
   };
 
-  const wipeAll = async () => {
-    if (!confirm("apagar TODAS as fotos do banco? esta ação não pode ser desfeita.")) return;
-    if (!confirm("tem certeza ABSOLUTA?")) return;
-    await supabase.from("memories").delete().neq("id", "00000000-0000-0000-0000-000000000000");
-    toast.success("tudo apagado.");
+  const toggleSelect = (id: string) => {
+    setSelected((s) => {
+      const n = new Set(s);
+      if (n.has(id)) n.delete(id); else n.add(id);
+      return n;
+    });
+  };
+
+  const selectAllFiltered = () => {
+    setSelected((s) => {
+      const n = new Set(s);
+      const allSelected = filtered.every((m) => n.has(m.id));
+      if (allSelected) filtered.forEach((m) => n.delete(m.id));
+      else filtered.forEach((m) => n.add(m.id));
+      return n;
+    });
+  };
+
+  const deleteSelected = async () => {
+    if (selected.size === 0) return;
+    if (!confirm(`apagar ${selected.size} foto(s) selecionada(s)? esta ação não pode ser desfeita.`)) return;
+    const ids = Array.from(selected);
+    const paths = items.filter((m) => selected.has(m.id)).map((m) => m.storage_path);
+    // Apaga do storage primeiro (best effort) e depois do banco
+    if (paths.length) await supabase.storage.from("memories").remove(paths);
+    const { error } = await supabase.from("memories").delete().in("id", ids);
+    if (error) { toast.error("erro ao apagar: " + error.message); return; }
+    toast.success(`${ids.length} foto(s) apagada(s).`);
+    setSelected(new Set());
     void load();
   };
 
