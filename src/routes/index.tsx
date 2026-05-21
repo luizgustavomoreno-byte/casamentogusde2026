@@ -32,7 +32,7 @@ function IndexPage() {
 function Footer() {
   return (
     <footer className="pb-8 text-center">
-      <p className="label-eyebrow">feito com amor · lg &amp; dc</p>
+      <p className="label-eyebrow">Feito com amor · D &amp; L</p>
     </footer>
   );
 }

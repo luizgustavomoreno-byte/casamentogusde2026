@@ -62,13 +62,25 @@ export function UploadCard() {
       let outMime = item.file.type || "application/octet-stream";
 
       if (!isVideo) {
-        const compressed = await imageCompression(item.file, {
-          maxSizeMB: 2.5,
-          maxWidthOrHeight: 1400,
+        // compressão forte mantendo qualidade visual:
+        // 1ª passada: redimensiona para 1920px e mira ~1.2MB
+        // se ainda passar de 1.5MB, 2ª passada mais agressiva
+        let compressed: Blob = await imageCompression(item.file, {
+          maxSizeMB: 1.2,
+          maxWidthOrHeight: 1920,
           useWebWorker: true,
           fileType: "image/jpeg",
-          initialQuality: 0.8,
+          initialQuality: 0.82,
         });
+        if (compressed.size > 1.5 * 1024 * 1024) {
+          compressed = await imageCompression(compressed as File, {
+            maxSizeMB: 0.9,
+            maxWidthOrHeight: 1600,
+            useWebWorker: true,
+            fileType: "image/jpeg",
+            initialQuality: 0.72,
+          });
+        }
         outMime = "image/jpeg";
         const baseName = item.file.name.replace(/\.[^.]+$/, "") || "foto";
         outFile = new File([compressed], `${baseName}.jpg`, { type: "image/jpeg" });
@@ -184,8 +196,8 @@ export function UploadCard() {
           </button>
         </div>
 
-        {/* capture="environment" abre direto a câmera traseira no celular */}
-        <input ref={cameraRef} type="file" accept="image/*,video/*" capture="environment" hidden onChange={(e) => { handleFiles(e.target.files); e.target.value = ""; }} />
+        {/* "tirar foto" abre direto a câmera (somente foto) */}
+        <input ref={cameraRef} type="file" accept="image/*" capture="environment" hidden onChange={(e) => { handleFiles(e.target.files); e.target.value = ""; }} />
         <input ref={galleryRef} type="file" accept="image/*,video/*" multiple hidden onChange={(e) => { handleFiles(e.target.files); e.target.value = ""; }} />
 
         {queue.length > 0 && (

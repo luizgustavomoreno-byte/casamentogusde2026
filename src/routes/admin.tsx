@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
 import { QRCodeCanvas } from "qrcode.react";
 import JSZip from "jszip";
 import { Eye, EyeOff, Download, Trash2 } from "lucide-react";
@@ -9,11 +8,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { Topbar } from "@/components/Topbar";
 import { SignedImage } from "@/components/SignedImage";
 import { signedUrl, MOMENT_LABEL, firstName } from "@/lib/media";
-import { deleteFromDrive } from "@/lib/drive.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin")({
-  head: () => ({ meta: [{ title: "admin · casamento lg & dc" }] }),
+  head: () => ({ meta: [{ title: "admin · casamento d & l" }] }),
   component: AdminPage,
 });
 
@@ -21,7 +19,6 @@ type Filter = "all" | "public" | "private" | "hidden" | "flagged";
 
 function AdminPage() {
   const { user, isAdmin, loading } = useAuth();
-  const driveDelete = useServerFn(deleteFromDrive);
   const [items, setItems] = useState<any[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<Filter>("all");
@@ -119,18 +116,15 @@ function AdminPage() {
 
   const deleteSelected = async () => {
     if (selected.size === 0) return;
-    if (!confirm(`apagar ${selected.size} foto(s) selecionada(s)? esta ação não pode ser desfeita.`)) return;
+    if (!confirm(`apagar ${selected.size} foto(s) do app? os arquivos continuam salvos no Google Drive como backup.`)) return;
     const ids = Array.from(selected);
     const rows = items.filter((m) => selected.has(m.id));
     const paths = rows.map((m) => m.storage_path).filter(Boolean) as string[];
-    const driveIds = rows.map((m) => m.drive_file_id).filter(Boolean) as string[];
+    // legado: só removemos do Supabase Storage. Arquivos do Drive permanecem como backup permanente.
     if (paths.length) await supabase.storage.from("memories").remove(paths);
-    if (driveIds.length) {
-      try { await driveDelete({ data: { fileIds: driveIds } }); } catch (e) { console.error(e); }
-    }
     const { error } = await supabase.from("memories").delete().in("id", ids);
     if (error) { toast.error("erro ao apagar: " + error.message); return; }
-    toast.success(`${ids.length} foto(s) apagada(s).`);
+    toast.success(`${ids.length} foto(s) removida(s) do app. backup mantido no Drive.`);
     setSelected(new Set());
     void load();
   };
