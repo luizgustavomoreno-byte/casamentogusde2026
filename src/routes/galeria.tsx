@@ -11,7 +11,7 @@ import { signedUrl } from "@/lib/media";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/galeria")({
-  head: () => ({ meta: [{ title: "galeria · casamento lg & dc" }] }),
+  head: () => ({ meta: [{ title: "galeria · casamento d & l" }] }),
   component: GaleriaPage,
 });
 
