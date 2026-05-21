@@ -12,6 +12,7 @@ import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
 import { supabase } from "@/integrations/supabase/client";
+import { BottomNav } from "@/components/BottomNav";
 
 function NotFoundComponent() {
   return (
@@ -50,13 +51,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "theme-color", content: "#FBF6EE" },
-      { title: "Casamento LG & DC · 30·05·2026" },
-      { name: "description", content: "Compartilhe as fotos e vídeos do casamento de Luiz Gustavo & Débora Cristina." },
-      { property: "og:title", content: "Casamento LG & DC · 30·05·2026" },
-      { property: "og:description", content: "Compartilhe as fotos e vídeos do casamento de Luiz Gustavo & Débora Cristina." },
+      { title: "Casamento D & L · 30·05·2026" },
+      { name: "description", content: "Compartilhe as fotos e vídeos do casamento de Débora & Luiz Gustavo." },
+      { property: "og:title", content: "Casamento D & L · 30·05·2026" },
+      { property: "og:description", content: "Compartilhe as fotos e vídeos do casamento de Débora & Luiz Gustavo." },
       { property: "og:type", content: "website" },
-      { name: "twitter:title", content: "Casamento LG & DC · 30·05·2026" },
-      { name: "twitter:description", content: "Compartilhe as fotos e vídeos do casamento de Luiz Gustavo & Débora Cristina." },
+      { name: "twitter:title", content: "Casamento D & L · 30·05·2026" },
+      { name: "twitter:description", content: "Compartilhe as fotos e vídeos do casamento de Débora & Luiz Gustavo." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1a7b99e9-c863-4ef9-b465-f20e2abea373/id-preview-d1e623d1--5ab0507c-0612-49cf-8931-76701689fc3d.lovable.app-1779235905549.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1a7b99e9-c863-4ef9-b465-f20e2abea373/id-preview-d1e623d1--5ab0507c-0612-49cf-8931-76701689fc3d.lovable.app-1779235905549.png" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -94,7 +95,10 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthSync />
-      <Outlet />
+      <div className="pb-20">
+        <Outlet />
+      </div>
+      <BottomNav />
       <Toaster position="top-center" />
     </QueryClientProvider>
   );
