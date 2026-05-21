@@ -2,14 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useAuth, signOut } from "@/hooks/useAuth";
 import { initials, firstName } from "@/lib/media";
-import { LogOut, ChevronDown } from "lucide-react";
-
-const TABS = [
-  { to: "/", label: "início" },
-  { to: "/galeria", label: "galeria" },
-  { to: "/ranking", label: "ranking" },
-  { to: "/tv", label: "tv" },
-] as const;
+import { LogOut, ChevronDown, Shield } from "lucide-react";
 
 export function Topbar() {
   const { user, profile, isAdmin } = useAuth();
@@ -17,30 +10,13 @@ export function Topbar() {
 
   return (
     <header className="sticky top-0 z-40 bg-[var(--bg-cream-deep)]/85 backdrop-blur-md border-b border-border">
-      <div className="mx-auto max-w-5xl px-4 py-3 flex items-center gap-3">
-        <Link to="/" className="font-serif text-lg shrink-0 text-rose-deep">D &amp; L</Link>
-        <nav className="flex-1 overflow-x-auto flex gap-1 scrollbar-none">
-          {TABS.map((t) => (
-            <Link
-              key={t.to}
-              to={t.to}
-              className="px-3 py-2 rounded-full text-sm whitespace-nowrap text-muted-foreground hover:text-rose-deep hover:bg-rose-bg transition-colors"
-              activeProps={{ className: "px-3 py-2 rounded-full text-sm whitespace-nowrap bg-rose-bg text-rose-deep font-medium" }}
-              activeOptions={{ exact: true }}
-            >
-              {t.label}
-            </Link>
-          ))}
-          {isAdmin && (
-            <Link
-              to="/admin"
-              className="px-3 py-2 rounded-full text-sm whitespace-nowrap text-muted-foreground hover:text-rose-deep hover:bg-rose-bg transition-colors"
-              activeProps={{ className: "px-3 py-2 rounded-full text-sm whitespace-nowrap bg-rose-bg text-rose-deep font-medium" }}
-            >
-              admin
-            </Link>
-          )}
-        </nav>
+      <div className="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between gap-3">
+        <Link to="/" className="flex items-baseline gap-2 shrink-0">
+          <span className="font-serif text-lg text-rose-deep">Casamento D &amp; L</span>
+          <span className="hidden sm:inline text-[11px] uppercase tracking-widest text-muted-foreground">
+            · 30·05·2026
+          </span>
+        </Link>
         {user && profile && (
           <div className="relative shrink-0">
             <button
@@ -54,11 +30,20 @@ export function Topbar() {
               <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
             </button>
             {menuOpen && (
-              <div className="absolute right-0 top-full mt-2 w-44 bg-card rounded-xl shadow-elegant border border-border overflow-hidden">
+              <div className="absolute right-0 top-full mt-2 w-48 bg-card rounded-xl shadow-elegant border border-border overflow-hidden">
                 <div className="px-3 py-2 border-b border-border">
                   <p className="text-sm font-medium truncate">{profile.name}</p>
                   <p className="text-xs text-muted-foreground truncate">{profile.email}</p>
                 </div>
+                {isAdmin && (
+                  <Link
+                    to="/admin"
+                    onClick={() => setMenuOpen(false)}
+                    className="w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-muted transition-colors"
+                  >
+                    <Shield className="w-4 h-4" /> admin
+                  </Link>
+                )}
                 <button
                   onClick={signOut}
                   className="w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-muted transition-colors"
