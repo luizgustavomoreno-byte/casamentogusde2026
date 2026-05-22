@@ -44,19 +44,26 @@ export function Lightbox({ memory, onClose }: { memory: MemoryFull; onClose: () 
   }, [memory.id]);
 
   const loadAll = async () => {
-    const [{ data: likeRows }, { data: commentRows }] = await Promise.all([
+    const [{ data: likeRows }, { data: commentRows, error: cErr }] = await Promise.all([
       supabase.from("likes").select("user_id").eq("memory_id", memory.id),
-      supabase.from("comments").select("id, user_id, text, created_at, profiles(name)")
+      supabase.from("comments").select("id, user_id, text, created_at")
         .eq("memory_id", memory.id).order("created_at"),
     ]);
+    if (cErr) console.error("load comments error", cErr);
     setLikes(likeRows?.length ?? 0);
     setLiked(!!likeRows?.some((l) => l.user_id === user?.id));
-    setComments(
-      (commentRows ?? []).map((c: any) => ({
-        ...c,
-        profile: c.profiles,
-      })),
-    );
+
+    const list = commentRows ?? [];
+    const userIds = Array.from(new Set(list.map((c) => c.user_id)));
+    let profileMap: Record<string, { name: string }> = {};
+    if (userIds.length > 0) {
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, name")
+        .in("id", userIds);
+      profileMap = Object.fromEntries((profs ?? []).map((p: any) => [p.id, { name: p.name }]));
+    }
+    setComments(list.map((c) => ({ ...c, profile: profileMap[c.user_id] ?? null })));
   };
 
   const toggleLike = async () => {
@@ -74,7 +81,22 @@ export function Lightbox({ memory, onClose }: { memory: MemoryFull; onClose: () 
     if (!user || !commentText.trim()) return;
     const text = commentText.trim().slice(0, 300);
     setCommentText("");
-    await supabase.from("comments").insert({ memory_id: memory.id, user_id: user.id, text });
+    const tempId = `temp-${Date.now()}`;
+    const optimistic: Comment = {
+      id: tempId,
+      user_id: user.id,
+      text,
+      created_at: new Date().toISOString(),
+      profile: { name: (user.user_metadata as any)?.full_name ?? (user.user_metadata as any)?.name ?? user.email?.split("@")[0] ?? "você" },
+    };
+    setComments((prev) => [...prev, optimistic]);
+    const { error } = await supabase.from("comments").insert({ memory_id: memory.id, user_id: user.id, text });
+    if (error) {
+      console.error("send comment error", error);
+      setComments((prev) => prev.filter((c) => c.id !== tempId));
+      setCommentText(text);
+      return;
+    }
     void loadAll();
   };
 
