@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Trophy, Heart } from "lucide-react";
+import { Trophy, Heart, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Topbar } from "@/components/Topbar";
@@ -20,6 +20,7 @@ function RankingPage() {
   const [stats, setStats] = useState({ photos: 0, people: 0, likes: 0 });
   const [tops, setTops] = useState<Photographer[]>([]);
   const [topLiked, setTopLiked] = useState<any[]>([]);
+  const [topCommented, setTopCommented] = useState<any[]>([]);
   const [active, setActive] = useState<MemoryFull | null>(null);
 
   useEffect(() => {
@@ -35,9 +36,14 @@ function RankingPage() {
       .select("id, user_id, type, storage_path, drive_file_id, drive_view_url, drive_thumbnail_url, moment, visibility, message, created_at, profiles(name)")
       .eq("visibility", "public").eq("hidden", false);
     const memList = mems ?? [];
-    const { data: allLikes } = await supabase.from("likes").select("memory_id");
+    const [{ data: allLikes }, { data: allComments }] = await Promise.all([
+      supabase.from("likes").select("memory_id"),
+      supabase.from("comments").select("memory_id"),
+    ]);
     const likeCount: Record<string, number> = {};
     for (const l of allLikes ?? []) likeCount[l.memory_id] = (likeCount[l.memory_id] ?? 0) + 1;
+    const commentCount: Record<string, number> = {};
+    for (const c of allComments ?? []) commentCount[c.memory_id] = (commentCount[c.memory_id] ?? 0) + 1;
 
     const byUser: Record<string, Photographer> = {};
     for (const m of memList as any[]) {
@@ -48,10 +54,9 @@ function RankingPage() {
     }
     const tops = Object.values(byUser).sort((a, b) => b.photos - a.photos).slice(0, 5);
 
-    const topLiked = [...memList]
-      .map((m: any) => ({ ...m, profile: m.profiles, likeCount: likeCount[m.id] ?? 0 }))
-      .sort((a, b) => b.likeCount - a.likeCount)
-      .slice(0, 6);
+    const enriched = memList.map((m: any) => ({ ...m, profile: m.profiles, likeCount: likeCount[m.id] ?? 0, commentCount: commentCount[m.id] ?? 0 }));
+    const topLiked = [...enriched].sort((a, b) => b.likeCount - a.likeCount).filter(m => m.likeCount > 0).slice(0, 6);
+    const topCommented = [...enriched].sort((a, b) => b.commentCount - a.commentCount).filter(m => m.commentCount > 0).slice(0, 6);
 
     setStats({
       photos: memList.length,
@@ -60,6 +65,7 @@ function RankingPage() {
     });
     setTops(tops);
     setTopLiked(topLiked);
+    setTopCommented(topCommented);
   };
 
   if (authLoading) return <div className="p-8 text-center text-muted-foreground">carregando...</div>;
@@ -106,6 +112,24 @@ function RankingPage() {
                   <SignedImage path={m.storage_path} driveFileId={m.drive_file_id} driveThumbnailUrl={m.drive_thumbnail_url} driveViewUrl={m.drive_view_url} type={m.type} className="w-full h-full object-cover" />
                   <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[10px] font-bold text-white" style={{ backgroundColor: "var(--gold)" }}>#{i + 1}</span>
                   <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded text-[10px] bg-black/60 text-white">♡ {m.likeCount}</span>
+                  <span className="absolute bottom-1.5 left-1.5 text-[10px] text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow">{firstName(m.profile?.name ?? "")}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="bg-card rounded-3xl border border-border p-5 mt-5">
+          <h2 className="font-serif text-xl text-rose-deep mb-4 flex items-center gap-2"><MessageCircle className="w-5 h-5 text-caramel" /> mais comentadas</h2>
+          {topCommented.length === 0 ? (
+            <p className="text-sm text-muted-foreground">ainda sem comentários.</p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {topCommented.map((m, i) => (
+                <button key={m.id} onClick={() => setActive(m)} className="relative aspect-square rounded-xl overflow-hidden bg-muted group">
+                  <SignedImage path={m.storage_path} driveFileId={m.drive_file_id} driveThumbnailUrl={m.drive_thumbnail_url} driveViewUrl={m.drive_view_url} type={m.type} className="w-full h-full object-cover" />
+                  <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[10px] font-bold text-white" style={{ backgroundColor: "var(--caramel, #c9a84c)" }}>#{i + 1}</span>
+                  <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded text-[10px] bg-black/60 text-white flex items-center gap-0.5"><MessageCircle className="w-2.5 h-2.5 fill-current" /> {m.commentCount}</span>
                   <span className="absolute bottom-1.5 left-1.5 text-[10px] text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow">{firstName(m.profile?.name ?? "")}</span>
                 </button>
               ))}

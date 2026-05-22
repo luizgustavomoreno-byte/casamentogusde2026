@@ -1,4 +1,4 @@
-import { Heart, Play, Lock } from "lucide-react";
+import { Heart, Play, Lock, MessageCircle } from "lucide-react";
 import { SignedImage } from "./SignedImage";
 import { MOMENT_LABEL, firstName } from "@/lib/media";
 
@@ -14,6 +14,7 @@ export type MemoryItem = {
   visibility: "public" | "private";
   message: string | null;
   likeCount?: number;
+  commentCount?: number;
   profile?: { name: string } | null;
 };
 
@@ -53,9 +54,18 @@ export function MemoryCard({
           <Play className="w-8 h-8 text-white drop-shadow-lg fill-white/40" />
         </span>
       )}
-      {(m.likeCount ?? 0) > 0 && (
-        <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded-md text-[10px] bg-black/55 text-white flex items-center gap-0.5">
-          <Heart className="w-2.5 h-2.5 fill-current" /> {m.likeCount}
+      {((m.likeCount ?? 0) > 0 || (m.commentCount ?? 0) > 0) && (
+        <span className="absolute bottom-1.5 right-1.5 flex items-center gap-1">
+          {(m.likeCount ?? 0) > 0 && (
+            <span className="px-1.5 py-0.5 rounded-md text-[10px] bg-black/55 text-white flex items-center gap-0.5">
+              <Heart className="w-2.5 h-2.5 fill-current" /> {m.likeCount}
+            </span>
+          )}
+          {(m.commentCount ?? 0) > 0 && (
+            <span className="px-1.5 py-0.5 rounded-md text-[10px] bg-black/55 text-white flex items-center gap-0.5">
+              <MessageCircle className="w-2.5 h-2.5 fill-current" /> {m.commentCount}
+            </span>
+          )}
         </span>
       )}
       <span className="absolute inset-x-0 bottom-0 px-2 py-1 bg-gradient-to-t from-black/70 to-transparent text-white text-[10px] opacity-0 group-hover:opacity-100 transition-opacity text-left">
