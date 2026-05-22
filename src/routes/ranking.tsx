@@ -20,6 +20,7 @@ function RankingPage() {
   const [stats, setStats] = useState({ photos: 0, people: 0, likes: 0 });
   const [tops, setTops] = useState<Photographer[]>([]);
   const [topLiked, setTopLiked] = useState<any[]>([]);
+  const [topCommented, setTopCommented] = useState<any[]>([]);
   const [active, setActive] = useState<MemoryFull | null>(null);
 
   useEffect(() => {
@@ -35,9 +36,14 @@ function RankingPage() {
       .select("id, user_id, type, storage_path, drive_file_id, drive_view_url, drive_thumbnail_url, moment, visibility, message, created_at, profiles(name)")
       .eq("visibility", "public").eq("hidden", false);
     const memList = mems ?? [];
-    const { data: allLikes } = await supabase.from("likes").select("memory_id");
+    const [{ data: allLikes }, { data: allComments }] = await Promise.all([
+      supabase.from("likes").select("memory_id"),
+      supabase.from("comments").select("memory_id"),
+    ]);
     const likeCount: Record<string, number> = {};
     for (const l of allLikes ?? []) likeCount[l.memory_id] = (likeCount[l.memory_id] ?? 0) + 1;
+    const commentCount: Record<string, number> = {};
+    for (const c of allComments ?? []) commentCount[c.memory_id] = (commentCount[c.memory_id] ?? 0) + 1;
 
     const byUser: Record<string, Photographer> = {};
     for (const m of memList as any[]) {
@@ -48,10 +54,9 @@ function RankingPage() {
     }
     const tops = Object.values(byUser).sort((a, b) => b.photos - a.photos).slice(0, 5);
 
-    const topLiked = [...memList]
-      .map((m: any) => ({ ...m, profile: m.profiles, likeCount: likeCount[m.id] ?? 0 }))
-      .sort((a, b) => b.likeCount - a.likeCount)
-      .slice(0, 6);
+    const enriched = memList.map((m: any) => ({ ...m, profile: m.profiles, likeCount: likeCount[m.id] ?? 0, commentCount: commentCount[m.id] ?? 0 }));
+    const topLiked = [...enriched].sort((a, b) => b.likeCount - a.likeCount).filter(m => m.likeCount > 0).slice(0, 6);
+    const topCommented = [...enriched].sort((a, b) => b.commentCount - a.commentCount).filter(m => m.commentCount > 0).slice(0, 6);
 
     setStats({
       photos: memList.length,
@@ -60,6 +65,7 @@ function RankingPage() {
     });
     setTops(tops);
     setTopLiked(topLiked);
+    setTopCommented(topCommented);
   };
 
   if (authLoading) return <div className="p-8 text-center text-muted-foreground">carregando...</div>;
