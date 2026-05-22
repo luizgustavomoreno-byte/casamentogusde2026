@@ -1,4 +1,4 @@
-import { Heart, Play, Lock } from "lucide-react";
+import { Heart, Play, Lock, MessageCircle } from "lucide-react";
 import { SignedImage } from "./SignedImage";
 import { MOMENT_LABEL, firstName } from "@/lib/media";
 
@@ -14,6 +14,7 @@ export type MemoryItem = {
   visibility: "public" | "private";
   message: string | null;
   likeCount?: number;
+  commentCount?: number;
   profile?: { name: string } | null;
 };
 
