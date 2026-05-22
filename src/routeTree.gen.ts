@@ -14,6 +14,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RankingRouteImport } from './routes/ranking'
 import { Route as ObrigadoRouteImport } from './routes/obrigado'
 import { Route as GaleriaRouteImport } from './routes/galeria'
+import { Route as BarRouteImport } from './routes/bar'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -42,6 +43,11 @@ const GaleriaRoute = GaleriaRouteImport.update({
   path: '/galeria',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BarRoute = BarRouteImport.update({
+  id: '/bar',
+  path: '/bar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -56,6 +62,7 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/bar': typeof BarRoute
   '/galeria': typeof GaleriaRoute
   '/obrigado': typeof ObrigadoRoute
   '/ranking': typeof RankingRoute
@@ -65,6 +72,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/bar': typeof BarRoute
   '/galeria': typeof GaleriaRoute
   '/obrigado': typeof ObrigadoRoute
   '/ranking': typeof RankingRoute
@@ -75,6 +83,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/bar': typeof BarRoute
   '/galeria': typeof GaleriaRoute
   '/obrigado': typeof ObrigadoRoute
   '/ranking': typeof RankingRoute
@@ -86,6 +95,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/bar'
     | '/galeria'
     | '/obrigado'
     | '/ranking'
@@ -95,6 +105,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/bar'
     | '/galeria'
     | '/obrigado'
     | '/ranking'
@@ -104,6 +115,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/bar'
     | '/galeria'
     | '/obrigado'
     | '/ranking'
@@ -114,6 +126,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  BarRoute: typeof BarRoute
   GaleriaRoute: typeof GaleriaRoute
   ObrigadoRoute: typeof ObrigadoRoute
   RankingRoute: typeof RankingRoute
@@ -158,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GaleriaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bar': {
+      id: '/bar'
+      path: '/bar'
+      fullPath: '/bar'
+      preLoaderRoute: typeof BarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -178,6 +198,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  BarRoute: BarRoute,
   GaleriaRoute: GaleriaRoute,
   ObrigadoRoute: ObrigadoRoute,
   RankingRoute: RankingRoute,
