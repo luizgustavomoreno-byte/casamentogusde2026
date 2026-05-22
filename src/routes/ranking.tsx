@@ -118,6 +118,24 @@ function RankingPage() {
             </div>
           )}
         </div>
+
+        <div className="bg-card rounded-3xl border border-border p-5 mt-5">
+          <h2 className="font-serif text-xl text-rose-deep mb-4 flex items-center gap-2"><MessageCircle className="w-5 h-5 text-caramel" /> mais comentadas</h2>
+          {topCommented.length === 0 ? (
+            <p className="text-sm text-muted-foreground">ainda sem comentários.</p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {topCommented.map((m, i) => (
+                <button key={m.id} onClick={() => setActive(m)} className="relative aspect-square rounded-xl overflow-hidden bg-muted group">
+                  <SignedImage path={m.storage_path} driveFileId={m.drive_file_id} driveThumbnailUrl={m.drive_thumbnail_url} driveViewUrl={m.drive_view_url} type={m.type} className="w-full h-full object-cover" />
+                  <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[10px] font-bold text-white" style={{ backgroundColor: "var(--caramel, #c9a84c)" }}>#{i + 1}</span>
+                  <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded text-[10px] bg-black/60 text-white flex items-center gap-0.5"><MessageCircle className="w-2.5 h-2.5 fill-current" /> {m.commentCount}</span>
+                  <span className="absolute bottom-1.5 left-1.5 text-[10px] text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow">{firstName(m.profile?.name ?? "")}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </main>
       {active && <Lightbox memory={active} onClose={() => setActive(null)} />}
     </div>
