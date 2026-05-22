@@ -81,7 +81,22 @@ export function Lightbox({ memory, onClose }: { memory: MemoryFull; onClose: () 
     if (!user || !commentText.trim()) return;
     const text = commentText.trim().slice(0, 300);
     setCommentText("");
-    await supabase.from("comments").insert({ memory_id: memory.id, user_id: user.id, text });
+    const tempId = `temp-${Date.now()}`;
+    const optimistic: Comment = {
+      id: tempId,
+      user_id: user.id,
+      text,
+      created_at: new Date().toISOString(),
+      profile: { name: (user.user_metadata as any)?.full_name ?? (user.user_metadata as any)?.name ?? user.email?.split("@")[0] ?? "você" },
+    };
+    setComments((prev) => [...prev, optimistic]);
+    const { error } = await supabase.from("comments").insert({ memory_id: memory.id, user_id: user.id, text });
+    if (error) {
+      console.error("send comment error", error);
+      setComments((prev) => prev.filter((c) => c.id !== tempId));
+      setCommentText(text);
+      return;
+    }
     void loadAll();
   };
 
