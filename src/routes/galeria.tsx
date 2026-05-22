@@ -32,6 +32,7 @@ function GaleriaPage() {
     const channel = supabase.channel("gallery")
       .on("postgres_changes", { event: "*", schema: "public", table: "memories" }, () => load())
       .on("postgres_changes", { event: "*", schema: "public", table: "likes" }, () => load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "comments" }, () => load())
       .subscribe();
     return () => { void supabase.removeChannel(channel); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -45,11 +46,16 @@ function GaleriaPage() {
       .limit(500);
     const ids = (mems ?? []).map((m: any) => m.id);
     let likeMap: Record<string, number> = {};
+    let commentMap: Record<string, number> = {};
     if (ids.length) {
-      const { data: likeRows } = await supabase.from("likes").select("memory_id").in("memory_id", ids);
+      const [{ data: likeRows }, { data: commentRows }] = await Promise.all([
+        supabase.from("likes").select("memory_id").in("memory_id", ids),
+        supabase.from("comments").select("memory_id").in("memory_id", ids),
+      ]);
       for (const l of likeRows ?? []) likeMap[l.memory_id] = (likeMap[l.memory_id] ?? 0) + 1;
+      for (const c of commentRows ?? []) commentMap[c.memory_id] = (commentMap[c.memory_id] ?? 0) + 1;
     }
-    setItems((mems ?? []).map((m: any) => ({ ...m, profile: m.profiles, likeCount: likeMap[m.id] ?? 0 })));
+    setItems((mems ?? []).map((m: any) => ({ ...m, profile: m.profiles, likeCount: likeMap[m.id] ?? 0, commentCount: commentMap[m.id] ?? 0 })));
     setLoading(false);
   };
 
