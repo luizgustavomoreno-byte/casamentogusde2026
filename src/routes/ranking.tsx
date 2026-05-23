@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Topbar } from "@/components/Topbar";
 import { SignedImage } from "@/components/SignedImage";
 import { Lightbox, type MemoryFull } from "@/components/Lightbox";
-import { firstName } from "@/lib/media";
+
 
 export const Route = createFileRoute("/ranking")({
   head: () => ({ meta: [{ title: "ranking · casamento d & l" }] }),
