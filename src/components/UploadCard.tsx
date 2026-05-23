@@ -121,92 +121,111 @@ export function UploadCard() {
 
   return (
     <div className="mx-auto max-w-md px-4 pb-12">
-      <div className="bg-card rounded-3xl shadow-soft border border-border p-5 sm:p-6 fade-in">
-        <p className="label-eyebrow mb-3">enviar momento</p>
+      <div
+        className="bg-card rounded-3xl border p-6 sm:p-7 fade-in"
+        style={{ borderColor: "#F0DCE3", boxShadow: "0 4px 24px rgba(184,106,126,.06)" }}
+      >
+        <p className="font-sans text-[10px] tracking-[0.3em] text-[var(--text-tertiary)] uppercase text-center mb-5">
+          ENVIAR MOMENTO
+        </p>
 
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value.slice(0, 200))}
           placeholder="deixe um recadinho pros noivos (opcional)"
           rows={2}
-          className="w-full px-4 py-3 rounded-2xl bg-muted border-0 text-sm placeholder:text-text-tertiary resize-none focus:outline-none focus:ring-2 focus:ring-rose-light"
+          className="w-full px-4 py-3.5 rounded-2xl border-0 font-serif italic text-sm text-rose-deep placeholder:text-[#B89098] resize-none focus:outline-none focus:ring-2 focus:ring-rose-light mb-5"
+          style={{ background: "#FBEEE8", height: 58 }}
         />
 
-        <div className="mt-5">
-          <p className="text-xs text-muted-foreground mb-2">qual momento?</p>
-          <div className="grid grid-cols-3 gap-2">
-            {(["ceremonia", "festa", "pista"] as Moment[]).map((m) => (
+        <p className="font-serif italic text-[13px] text-[var(--text-tertiary)] mb-2.5 pl-1">
+          qual momento?
+        </p>
+        <div className="grid grid-cols-3 gap-2 mb-5">
+          {(["ceremonia", "festa", "pista"] as Moment[]).map((m) => {
+            const on = moment === m;
+            return (
               <button
                 key={m}
                 onClick={() => setMoment(m)}
-                className={`px-2 py-3 rounded-2xl text-xs font-medium border transition-all ${
-                  moment === m
-                    ? "bg-rose-bg text-rose-deep border-rose-light"
-                    : "bg-card text-muted-foreground border-border hover:border-rose-light/60"
+                className={`py-2.5 rounded-full font-serif text-[13px] border transition-all ${
+                  on
+                    ? "bg-rose-bg text-rose-deep"
+                    : "bg-card text-rose-deep hover:border-rose-light/60"
                 }`}
+                style={{
+                  borderColor: on ? "#D4798F" : "#EAD4D9",
+                  borderWidth: on ? 1.5 : 1,
+                }}
               >
-                {m === "ceremonia" && "⛪ cerimônia"}
+                {m === "ceremonia" && "🏠 cerimônia"}
                 {m === "festa" && "🥂 festa"}
                 {m === "pista" && "💃 pista"}
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
 
-        <div className="mt-4">
-          <p className="text-xs text-muted-foreground mb-2">visibilidade</p>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => setVisibility("public")}
-              className={`p-3 rounded-2xl text-left border transition-all ${
-                visibility === "public"
-                  ? "bg-rose-bg border-rose-light text-rose-deep"
-                  : "bg-card border-border text-muted-foreground hover:border-rose-light/60"
-              }`}
-            >
-              <div className="flex items-center gap-2 text-sm font-medium"><Globe className="w-4 h-4" /> pública</div>
-              <p className="text-[11px] mt-0.5 opacity-80">todos veem e baixam</p>
-            </button>
-            <button
-              onClick={() => setVisibility("private")}
-              className={`p-3 rounded-2xl text-left border transition-all ${
-                visibility === "private"
-                  ? "bg-rose-bg border-rose-light text-rose-deep"
-                  : "bg-card border-border text-muted-foreground hover:border-rose-light/60"
-              }`}
-            >
-              <div className="flex items-center gap-2 text-sm font-medium"><Lock className="w-4 h-4" /> privada</div>
-              <p className="text-[11px] mt-0.5 opacity-80">só você e os noivos</p>
-            </button>
-          </div>
+        <p className="font-serif italic text-[13px] text-[var(--text-tertiary)] mb-2.5 pl-1">
+          visibilidade
+        </p>
+        <div className="grid grid-cols-2 gap-2.5 mb-6">
+          {(
+            [
+              { v: "public", t: "🌐 Pública", s: "todos veem e baixam" },
+              { v: "private", t: "🔒 Privada", s: "só você e os noivos" },
+            ] as { v: Visibility; t: string; s: string }[]
+          ).map((opt) => {
+            const on = visibility === opt.v;
+            return (
+              <button
+                key={opt.v}
+                onClick={() => setVisibility(opt.v)}
+                className={`p-3 rounded-2xl text-left border transition-all ${
+                  on ? "bg-rose-bg" : "bg-card hover:border-rose-light/60"
+                }`}
+                style={{
+                  borderColor: on ? "#D4798F" : "#EAD4D9",
+                  borderWidth: on ? 1.5 : 1,
+                }}
+              >
+                <div className="font-serif text-[15px] text-rose-deep">{opt.t}</div>
+                <p className="text-[10.5px] mt-0.5 text-[var(--text-tertiary)]">{opt.s}</p>
+              </button>
+            );
+          })}
         </div>
 
-        <div className="mt-5 grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2.5 mb-4">
           <button
             onClick={() => cameraRef.current?.click()}
-            className="h-12 rounded-full bg-rose text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+            className="h-12 rounded-full text-white font-serif text-[15px] flex items-center justify-center gap-2 transition-opacity hover:opacity-90"
+            style={{
+              background: "linear-gradient(135deg, #C77890 0%, #B86A7E 100%)",
+              boxShadow: "0 4px 14px rgba(184,106,126,.25)",
+            }}
           >
             <Camera className="w-4 h-4" /> tirar foto
           </button>
           <button
             onClick={() => galleryRef.current?.click()}
-            className="h-12 rounded-full border-2 border-caramel text-caramel-text text-sm font-medium flex items-center justify-center gap-2 hover:bg-caramel/10 transition-colors"
+            className="h-12 rounded-full bg-card font-serif text-[15px] text-rose-deep flex items-center justify-center gap-2 hover:bg-rose-bg/40 transition-colors"
+            style={{ border: "1.5px solid #D4798F" }}
           >
             <ImageIcon className="w-4 h-4" /> da galeria
           </button>
         </div>
 
-        {/* "tirar foto" abre direto a câmera (somente foto) */}
         <input ref={cameraRef} type="file" accept="image/*" capture="environment" hidden onChange={(e) => { handleFiles(e.target.files); e.target.value = ""; }} />
         <input ref={galleryRef} type="file" accept="image/*,video/*" multiple hidden onChange={(e) => { handleFiles(e.target.files); e.target.value = ""; }} />
 
         {queue.length > 0 && (
-          <div className="mt-5 space-y-2">
+          <div className="mt-3 space-y-2">
             {queue.map((it) => (
-              <div key={it.id} className="flex items-center gap-3 p-2 rounded-xl bg-muted">
+              <div key={it.id} className="flex items-center gap-3 p-2 rounded-xl" style={{ background: "#FBEEE8" }}>
                 <img src={it.preview} alt="" className="w-9 h-9 rounded-lg object-cover bg-card" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs truncate">{it.file.name}</p>
+                  <p className="text-xs truncate text-rose-deep">{it.file.name}</p>
                   <div className="mt-1 h-1 bg-card rounded-full overflow-hidden">
                     <div className="h-full bg-rose transition-all" style={{ width: `${it.progress}%` }} />
                   </div>
@@ -225,8 +244,8 @@ export function UploadCard() {
           </div>
         )}
 
-        <p className="mt-4 text-[11px] text-center text-text-tertiary" style={{ color: "var(--text-tertiary)" }}>
-          envie quantas quiser · fotos e vídeos até 200MB (≈1 min em HD)
+        <p className="mt-4 font-serif italic text-[12px] text-center text-[var(--text-tertiary)]">
+          envie quantas quiser · até 200MB por vez
         </p>
       </div>
     </div>

@@ -115,36 +115,50 @@ function GaleriaPage() {
   );
 
   return (
-    <div className="min-h-screen bg-watercolor">
+    <div className="min-h-screen bg-cream-gradient">
       <Topbar />
-      <main className="mx-auto max-w-5xl px-4 py-6">
-        <div className="flex items-end justify-between flex-wrap gap-3 mb-4">
+      <main className="mx-auto max-w-5xl px-5 sm:px-8 pt-6 pb-24">
+        <div className="flex items-end justify-between flex-wrap gap-3 mb-5">
           <div>
-            <h1 className="font-serif text-3xl text-rose-deep">galeria</h1>
-            <p className="text-xs text-muted-foreground mt-1">
-              <span className="text-rose-light">♡</span> {stats.count} momentos públicos por {stats.people} pessoas
+            <h1 className="font-serif text-4xl sm:text-5xl text-rose-deep leading-none">Galeria</h1>
+            <p className="font-serif italic text-sm mt-1" style={{ color: "#B89098" }}>
+              ♡ {stats.count} momentos por {stats.people} pessoas
             </p>
           </div>
-          <button onClick={downloadAll} className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-card text-sm hover:border-rose-light transition-colors">
+          <button
+            onClick={downloadAll}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-card font-serif text-sm text-rose-deep hover:border-rose-light transition-colors"
+            style={{ border: "1px solid #EAD4D9", boxShadow: "0 2px 8px rgba(184,106,126,.05)" }}
+          >
             <Download className="w-4 h-4" /> baixar tudo
           </button>
         </div>
 
-        <div className="space-y-2 mb-5">
-          <Pills value={moment} onChange={(v) => setMoment(v as MomentFilter)} options={[
-            { v: "all", l: "tudo" }, { v: "ceremonia", l: "⛪ cerimônia" }, { v: "festa", l: "🥂 festa" }, { v: "pista", l: "💃 pista" },
-          ]} />
-          <Pills value={vis} onChange={(v) => setVis(v as VisFilter)} options={[
-            { v: "all", l: "todas" }, { v: "mine", l: "só minhas" }, { v: "minePrivate", l: "🔒 minhas privadas" },
-          ]} />
+        <div
+          className="bg-card rounded-2xl p-4 sm:p-5 mb-5"
+          style={{ border: "1px solid #F0DCE3", boxShadow: "0 2px 12px rgba(184,106,126,.04)" }}
+        >
+          <FilterRow label="Momento">
+            <Pills value={moment} onChange={(v) => setMoment(v as MomentFilter)} options={[
+              { v: "all", l: "tudo" }, { v: "ceremonia", l: "🏠 cerimônia" }, { v: "festa", l: "🥂 festa" }, { v: "pista", l: "💃 pista" },
+            ]} />
+          </FilterRow>
+          <div className="h-px my-3" style={{ background: "#FBEEE8" }} />
+          <FilterRow label="Quem">
+            <Pills value={vis} onChange={(v) => setVis(v as VisFilter)} options={[
+              { v: "all", l: "todas" }, { v: "mine", l: "só minhas" }, { v: "minePrivate", l: "🔒 minhas privadas" },
+            ]} />
+          </FilterRow>
         </div>
 
         {loading ? (
           <div className="text-center text-muted-foreground py-12">carregando momentos...</div>
         ) : filtered.length === 0 ? (
-          <div className="text-center text-muted-foreground py-12 text-sm">nenhuma foto ainda. seja o primeiro!</div>
+          <div className="text-center py-12 font-serif italic text-sm" style={{ color: "#B89098" }}>
+            nenhuma foto ainda. seja o primeiro!
+          </div>
         ) : (
-          <div className="grid gap-2" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))" }}>
+          <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))" }}>
             {filtered.map((m) => (
               <MemoryCard
                 key={m.id}
@@ -161,20 +175,39 @@ function GaleriaPage() {
   );
 }
 
+function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2.5 flex-wrap">
+      <span
+        className="font-serif italic text-[13px] min-w-[60px]"
+        style={{ color: "#B89098" }}
+      >
+        {label}
+      </span>
+      <div className="flex-1 min-w-0">{children}</div>
+    </div>
+  );
+}
+
 function Pills<T extends string>({ value, onChange, options }: { value: T; onChange: (v: T) => void; options: { v: T; l: string }[] }) {
   return (
     <div className="flex gap-1.5 flex-wrap">
-      {options.map((o) => (
-        <button
-          key={o.v}
-          onClick={() => onChange(o.v)}
-          className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
-            value === o.v ? "bg-rose-bg border-rose-light text-rose-deep" : "bg-card border-border text-muted-foreground hover:border-rose-light/60"
-          }`}
-        >
-          {o.l}
-        </button>
-      ))}
+      {options.map((o) => {
+        const on = value === o.v;
+        return (
+          <button
+            key={o.v}
+            onClick={() => onChange(o.v)}
+            className="px-3 py-1.5 rounded-full font-serif text-[13px] text-rose-deep transition-colors"
+            style={{
+              background: on ? "#F8E5EC" : "#fff",
+              border: on ? "1.5px solid #D4798F" : "1px solid #EAD4D9",
+            }}
+          >
+            {o.l}
+          </button>
+        );
+      })}
     </div>
   );
 }
