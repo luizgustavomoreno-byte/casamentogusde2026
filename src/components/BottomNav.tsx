@@ -1,11 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import { Home, Images, Trophy, Tv, Wine } from "lucide-react";
+import { Home, Images, Trophy, Tv, Wine, UtensilsCrossed } from "lucide-react";
 
 const ITEMS = [
   { to: "/", label: "início", Icon: Home, exact: true },
+  { to: "/menu", label: "menu", Icon: UtensilsCrossed, exact: false },
+  { to: "/bar", label: "bar", Icon: Wine, exact: false },
   { to: "/galeria", label: "galeria", Icon: Images, exact: false },
   { to: "/ranking", label: "ranking", Icon: Trophy, exact: false },
-  { to: "/bar", label: "bar", Icon: Wine, exact: false },
   { to: "/tv", label: "carrossel", Icon: Tv, exact: false },
 ] as const;
 
@@ -15,7 +16,7 @@ export function BottomNav() {
       className="fixed bottom-0 inset-x-0 z-40 bg-[var(--bg-cream-deep)]/95 backdrop-blur-md border-t border-border"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <ul className="mx-auto max-w-md grid grid-cols-5">
+      <ul className="mx-auto max-w-xl grid grid-cols-6">
         {ITEMS.map(({ to, label, Icon, exact }) => (
           <li key={to}>
             <Link
