@@ -126,11 +126,11 @@
 
 @layer utilities {
   .bg-watercolor {
-    background:
-      radial-gradient(at 20% 10%, color-mix(in oklab, var(--rose-light) 22%, transparent), transparent 55%),
-      radial-gradient(at 85% 25%, color-mix(in oklab, var(--caramel) 18%, transparent), transparent 50%),
-      radial-gradient(at 50% 95%, color-mix(in oklab, var(--sage) 14%, transparent), transparent 60%),
-      var(--bg-cream);
+    background: linear-gradient(180deg, #FDF6EE 0%, #FBEEE8 100%);
+    min-height: 100vh;
+  }
+  .bg-cream-gradient {
+    background: linear-gradient(180deg, #FDF6EE 0%, #FBEEE8 100%);
   }
   .shadow-soft { box-shadow: var(--shadow-soft); }
   .shadow-elegant { box-shadow: var(--shadow-elegant); }
