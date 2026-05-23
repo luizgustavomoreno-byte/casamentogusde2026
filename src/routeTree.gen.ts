@@ -13,6 +13,7 @@ import { Route as TvRouteImport } from './routes/tv'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RankingRouteImport } from './routes/ranking'
 import { Route as ObrigadoRouteImport } from './routes/obrigado'
+import { Route as MenuRouteImport } from './routes/menu'
 import { Route as GaleriaRouteImport } from './routes/galeria'
 import { Route as BarRouteImport } from './routes/bar'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -36,6 +37,11 @@ const RankingRoute = RankingRouteImport.update({
 const ObrigadoRoute = ObrigadoRouteImport.update({
   id: '/obrigado',
   path: '/obrigado',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MenuRoute = MenuRouteImport.update({
+  id: '/menu',
+  path: '/menu',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GaleriaRoute = GaleriaRouteImport.update({
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/bar': typeof BarRoute
   '/galeria': typeof GaleriaRoute
+  '/menu': typeof MenuRoute
   '/obrigado': typeof ObrigadoRoute
   '/ranking': typeof RankingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/bar': typeof BarRoute
   '/galeria': typeof GaleriaRoute
+  '/menu': typeof MenuRoute
   '/obrigado': typeof ObrigadoRoute
   '/ranking': typeof RankingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -85,6 +93,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/bar': typeof BarRoute
   '/galeria': typeof GaleriaRoute
+  '/menu': typeof MenuRoute
   '/obrigado': typeof ObrigadoRoute
   '/ranking': typeof RankingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/bar'
     | '/galeria'
+    | '/menu'
     | '/obrigado'
     | '/ranking'
     | '/sitemap.xml'
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/bar'
     | '/galeria'
+    | '/menu'
     | '/obrigado'
     | '/ranking'
     | '/sitemap.xml'
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/bar'
     | '/galeria'
+    | '/menu'
     | '/obrigado'
     | '/ranking'
     | '/sitemap.xml'
@@ -128,6 +140,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   BarRoute: typeof BarRoute
   GaleriaRoute: typeof GaleriaRoute
+  MenuRoute: typeof MenuRoute
   ObrigadoRoute: typeof ObrigadoRoute
   RankingRoute: typeof RankingRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -162,6 +175,13 @@ declare module '@tanstack/react-router' {
       path: '/obrigado'
       fullPath: '/obrigado'
       preLoaderRoute: typeof ObrigadoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/menu': {
+      id: '/menu'
+      path: '/menu'
+      fullPath: '/menu'
+      preLoaderRoute: typeof MenuRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/galeria': {
@@ -200,6 +220,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   BarRoute: BarRoute,
   GaleriaRoute: GaleriaRoute,
+  MenuRoute: MenuRoute,
   ObrigadoRoute: ObrigadoRoute,
   RankingRoute: RankingRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
