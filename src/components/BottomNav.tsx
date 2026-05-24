@@ -3,11 +3,11 @@ import { Home, Images, Trophy, Tv, Wine, UtensilsCrossed } from "lucide-react";
 
 const ITEMS = [
   { to: "/", label: "início", Icon: Home, exact: true },
-  { to: "/menu", label: "menu", Icon: UtensilsCrossed, exact: false },
-  { to: "/bar", label: "bar", Icon: Wine, exact: false },
   { to: "/galeria", label: "galeria", Icon: Images, exact: false },
   { to: "/ranking", label: "ranking", Icon: Trophy, exact: false },
   { to: "/tv", label: "carrossel", Icon: Tv, exact: false },
+  { to: "/menu", label: "menu", Icon: UtensilsCrossed, exact: false },
+  { to: "/bar", label: "bar", Icon: Wine, exact: false },
 ] as const;
 
 export function BottomNav() {
