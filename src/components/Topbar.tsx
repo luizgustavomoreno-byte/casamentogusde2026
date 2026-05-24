@@ -33,7 +33,7 @@ export function Topbar() {
               <div className="absolute right-0 top-full mt-2 w-48 bg-card rounded-xl shadow-elegant border border-border overflow-hidden">
                 <div className="px-3 py-2 border-b border-border">
                   <p className="text-sm font-medium truncate">{profile.name}</p>
-                  <p className="text-xs text-muted-foreground truncate">{profile.email}</p>
+                  <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                 </div>
                 {isAdmin && (
                   <Link
