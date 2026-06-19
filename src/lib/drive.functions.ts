@@ -56,8 +56,20 @@ export const uploadToDrive = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as any;
+    // Bloqueio global: admins ainda podem subir após encerrar
+    const { data: setting } = await supabase
+      .from("app_settings")
+      .select("value")
+      .eq("key", "uploads_enabled")
+      .maybeSingle();
+    const uploadsEnabled = setting ? (setting.value === true || setting.value === "true") : true;
+    if (!uploadsEnabled) {
+      const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+      if (!isAdmin) throw new Error("Os envios foram encerrados pelos noivos. Obrigado por participar! 💕");
+    }
     const headers = authHeaders();
     const folderId = await getOrCreateFolder();
+
 
     const safeName = data.file.name.replace(/[^\w.\-]+/g, "_").slice(0, 80);
     const fileName = `${Date.now()}-${userId.slice(0, 8)}-${safeName}`;

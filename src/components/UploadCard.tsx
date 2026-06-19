@@ -4,8 +4,10 @@ import { useServerFn } from "@tanstack/react-start";
 import imageCompression from "browser-image-compression";
 import { Camera, Image as ImageIcon, Globe, Lock, Check, X as XIcon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useUploadsEnabled } from "@/hooks/useUploadsEnabled";
 import { uploadToDrive } from "@/lib/drive.functions";
 import { toast } from "sonner";
+
 
 type Moment = "ceremonia" | "festa" | "pista";
 type Visibility = "public" | "private";
@@ -22,7 +24,8 @@ const MAX_SIZE = 200 * 1024 * 1024; // 200MB — vídeos curtos vão direto pro 
 
 export function UploadCard() {
   const upload = useServerFn(uploadToDrive);
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
+  const { enabled: uploadsEnabled } = useUploadsEnabled();
   const navigate = useNavigate();
   const [message, setMessage] = useState("");
   const [moment, setMoment] = useState<Moment>("ceremonia");
@@ -32,6 +35,29 @@ export function UploadCard() {
   const galleryRef = useRef<HTMLInputElement>(null);
 
   if (!user) return null;
+
+  // Envios encerrados — usuários comuns veem mensagem; admin segue podendo enviar
+  if (uploadsEnabled === false && !isAdmin) {
+    return (
+      <div className="mx-auto max-w-md px-4 pb-12">
+        <div
+          className="bg-card rounded-3xl border p-7 text-center fade-in"
+          style={{ borderColor: "#F0DCE3", boxShadow: "0 4px 24px rgba(184,106,126,.06)" }}
+        >
+          <p className="font-sans text-[10px] tracking-[0.3em] text-[var(--text-tertiary)] uppercase mb-3">
+            ENVIOS ENCERRADOS
+          </p>
+          <h2 className="font-serif text-2xl text-rose-deep mb-2">obrigado! 💕</h2>
+          <p className="font-serif italic text-[14px] text-[var(--text-tertiary)] leading-relaxed">
+            os envios de fotos e vídeos foram encerrados pelos noivos.
+            <br />
+            mas o álbum continua aqui pra você visitar sempre que quiser.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
 
   const handleFiles = (files: FileList | null) => {
     if (!files?.length) return;

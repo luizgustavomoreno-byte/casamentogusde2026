@@ -2,13 +2,15 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import JSZip from "jszip";
-import { Eye, EyeOff, Download, Trash2 } from "lucide-react";
+import { Eye, EyeOff, Download, Trash2, Lock, Unlock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUploadsEnabled } from "@/hooks/useUploadsEnabled";
 import { Topbar } from "@/components/Topbar";
 import { SignedImage } from "@/components/SignedImage";
 import { signedUrl, MOMENT_LABEL, firstName } from "@/lib/media";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "admin · casamento d & l" }] }),
@@ -19,6 +21,8 @@ type Filter = "all" | "public" | "private" | "hidden" | "flagged";
 
 function AdminPage() {
   const { user, isAdmin, loading } = useAuth();
+  const { enabled: uploadsEnabled, refresh: refreshUploads } = useUploadsEnabled();
+
   const [items, setItems] = useState<any[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<Filter>("all");
@@ -135,6 +139,10 @@ function AdminPage() {
       <main className="mx-auto max-w-5xl px-4 py-6">
         <h1 className="font-serif text-3xl text-rose-deep mb-5">admin</h1>
 
+        <UploadsToggle enabled={uploadsEnabled} onChanged={refreshUploads} />
+
+
+
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5">
           <Stat label="TOTAL" value={stats.total} />
           <Stat label="PÚBLICAS" value={stats.pub} />
@@ -218,3 +226,52 @@ function Stat({ label, value }: { label: string; value: number }) {
     </div>
   );
 }
+
+function UploadsToggle({ enabled, onChanged }: { enabled: boolean | null; onChanged: () => void }) {
+  const [saving, setSaving] = useState(false);
+  if (enabled === null) return null;
+
+  const toggle = async () => {
+    const next = !enabled;
+    const label = next ? "reabrir os envios para todos?" : "encerrar os envios? ninguém mais conseguirá enviar fotos ou vídeos (mas o álbum continua acessível).";
+    if (!confirm(label)) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("app_settings")
+      .upsert({ key: "uploads_enabled", value: next, updated_at: new Date().toISOString() });
+    setSaving(false);
+    if (error) { toast.error("erro: " + error.message); return; }
+    toast.success(next ? "envios reabertos ✨" : "envios encerrados 💕");
+    onChanged();
+  };
+
+  return (
+    <div className="mb-5 bg-card border border-border rounded-2xl p-4 flex items-center gap-3">
+      <div className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${enabled ? "bg-rose-bg text-rose-deep" : "bg-muted text-muted-foreground"}`}>
+        {enabled ? <Unlock className="w-5 h-5" /> : <Lock className="w-5 h-5" />}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="font-serif text-[15px] text-rose-deep">
+          envios {enabled ? "abertos" : "encerrados"}
+        </p>
+        <p className="text-[11px] text-muted-foreground">
+          {enabled
+            ? "convidados podem enviar fotos e vídeos normalmente."
+            : "ninguém envia mais — o álbum segue acessível pra todos visitarem."}
+        </p>
+      </div>
+      <button
+        onClick={toggle}
+        disabled={saving}
+        className={`shrink-0 px-4 py-2 rounded-full text-xs font-medium border transition-colors disabled:opacity-50 ${
+          enabled
+            ? "border-destructive text-destructive hover:bg-destructive/10"
+            : "border-rose-deep text-rose-deep hover:bg-rose-bg"
+        }`}
+      >
+        {enabled ? "encerrar envios" : "reabrir envios"}
+      </button>
+    </div>
+  );
+}
+
